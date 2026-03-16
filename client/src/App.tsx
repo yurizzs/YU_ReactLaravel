@@ -1,33 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+function App () {
+  
+  let name: string = "Mark";
+  let age: number = 20;
+
+  let score1: number = 85;
+  let score2: number = 90;
+  let totalScore: number = score1 +score2;
+
+  let average: number = totalScore/2;
+
+  // 
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card border-10 border-red-900">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <> {/* FRAGMENT */}
+        <h1 className='text-5xl'>Student Information</h1><br />
+
+        <div className='flex justify-between flex-col'>
+          <div className='flex flex col justify-between'>
+            <div className='flex flex-col justify-center'>
+              <p>Name: {name} </p>
+              <p>Age: {age} </p>
+            </div>
+            <div className='flex flex-col justify-center'>
+              <h2>Scores</h2>
+              <p>Score 1: {score1} </p>
+              <p>Score 2: {score2} </p>
+            </div>
+          </div>
+
+          <h3>Total Score: {totalScore} </h3>
+          <h3>Average Score: {average} </h3>
+        </div>
     </>
   )
 }
