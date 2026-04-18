@@ -6,6 +6,15 @@ import { PATHS } from "./path";
 const Dashboard = React.lazy(() => import("../pages/Dashboard"));
 
 export const Routes = createBrowserRouter([
+  // // Public Routes
+  // {
+  //   index: true,
+  //   element: <Navigate to={PATHS.APP.ROOT} replace />,
+  // },
+  // {
+  //   path: PATHS.LOGIN,
+  //   element: <div>Login Page</div>, // Replace with your Login component
+  // },
 
   // Authenticated
   {
