@@ -23,7 +23,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const location = useLocation();
-  console.log("test")
   
   const menuGroups: MenuGroup[] = [
     {

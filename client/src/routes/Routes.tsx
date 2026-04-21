@@ -4,17 +4,9 @@ import { PATHS } from "./path";
 
 // Lazy Loading
 const Dashboard = React.lazy(() => import("../pages/Dashboard"));
+const Users = React.lazy(() => import("../pages/users/Users"));
 
 export const Routes = createBrowserRouter([
-  // // Public Routes
-  // {
-  //   index: true,
-  //   element: <Navigate to={PATHS.APP.ROOT} replace />,
-  // },
-  // {
-  //   path: PATHS.LOGIN,
-  //   element: <div>Login Page</div>, // Replace with your Login component
-  // },
 
   // Authenticated
   {
@@ -27,6 +19,10 @@ export const Routes = createBrowserRouter([
       {
         path: "dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "users",
+        element: <Users />,
       },
     ],
   },
