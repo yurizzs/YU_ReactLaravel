@@ -2,7 +2,7 @@ import React from 'react';
 import * as FaIcons from 'react-icons/fa6';
 import { Icon, LoadingSpinner } from "./index";
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type IconPosition = 'left' | 'right';
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';

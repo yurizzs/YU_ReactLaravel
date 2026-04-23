@@ -7,7 +7,9 @@ import {
   TableRow,
   TablePagination,
 } from '../../components/ui/table/Table';
+import { Button, ToastProvider } from '../../components/ui';
 import { MainLayout } from '../../components/layouts';
+import CreateUserModal from './components/CreateUserModal';
 
 /* =========================
    DATA
@@ -30,9 +32,6 @@ type SortState = {
   direction: "asc" | "desc";
 };
 
-/* =========================
-   COMPONENT
-========================= */
 const Users = () => {
 
   const [sort, setSort] = useState<SortState>({
@@ -78,12 +77,21 @@ const Users = () => {
     page * pageSize
   );
 
+   /* =========================
+     MODAL STATE
+  ========================= */
+  const [isCreateUserModalOpen, setIsCreateModalOpen] = useState(false);
+
   /* =========================
      UI
   ========================= */
   const content = (
     <div className="space-y-4">
-
+      <div>
+        <Button variant='primary' iconName='FaPlus' onClick={() => setIsCreateModalOpen(true)}>
+          Create User
+        </Button>
+      </div>
       <Table>
         <TableHeader>
           <tr>
@@ -128,7 +136,11 @@ const Users = () => {
           setPage(1);
         }}
       />
-
+      <CreateUserModal
+        isOpen={isCreateUserModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+      <ToastProvider />
     </div>
   );
 
