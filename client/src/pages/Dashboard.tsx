@@ -1,6 +1,6 @@
 import { useState } from "react";
 import MainLayout from "../components/layouts/MainLayout";
-import { ToastProvider, Button } from "../components/ui/index";
+import { ToastProvider, Button, Image } from "../components/ui/index";
 import { notify } from "../util/notify";
 import { 
   InputField, PasswordInputField, Checkbox, 
@@ -8,6 +8,9 @@ import {
   TextArea
 } 
 from "../components/ui/forms/index";
+
+// EXAMPLE IMAGE
+import HeroImage from '../assets/hero.png';
 
 const Dashboard = () => {
 
@@ -208,6 +211,48 @@ const Dashboard = () => {
             />
 
           </div>
+        </div>
+
+        {/*  IMAGE COMPONENT USAGES */}
+        <div className="space-y-4">
+          <h1 className="text-text">Image Component Example Usage</h1>
+          
+          <Image 
+            src={HeroImage} 
+            alt="Hero Image"
+            size="md"
+          />
+
+          <Image 
+            src={HeroImage}
+            customSize="w-40 h-60" 
+          />
+
+          <Image 
+            src={HeroImage} 
+            customSize="w-[180px] h-[250px]" 
+          />
+
+          <Image 
+            src={HeroImage}
+            alt="Hero Image"
+            customSize="w-full"
+            aspectRatio="aspect-[16/9]"
+          />
+
+          <Image 
+            src="/images/user.jpg"
+            size="md"
+            className="rounded-full"
+          />
+
+          <Image 
+            src="/images/user.jpg"
+            size="md"
+            className="rounded-full"
+            fallbackIcon="FaUser"
+          />
+
         </div>
 
       </div>
