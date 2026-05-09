@@ -6,8 +6,8 @@ use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
 {
@@ -34,11 +34,14 @@ class UserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
 
             'email' => [
-                'nullable',
+                'required',
                 'email',
                 Rule::unique('users', 'email')->ignore($user?->id),
             ],
-            'phone'  => ['nullable', 'string', 'phone:PH', 'max:20'],
+            'phone'  => ['nullable',
+                'string', 'phone:PH', 'max:20',
+                Rule::unique('users', 'phone')->ignore($user?->id),
+            ],
             'role' => [
                 'required',
                 Rule::enum(UserRole::class),
@@ -50,6 +53,13 @@ class UserRequest extends FormRequest
                 Password::min(8)->mixedCase()->numbers()->symbols(),
                 'confirmed',
             ],
+
+            'password_confirmation' => [
+                $this->isMethod('post') ? 'required' : 'nullable',
+                'string',
+                Password::min(8)->mixedCase()->numbers()->symbols(),
+            ],
+
             'avatar' => ['nullable', 'image', 'max:25000'],
         ];
     }
