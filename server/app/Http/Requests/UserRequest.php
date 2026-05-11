@@ -26,9 +26,8 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $slug = $this->route('slug');
 
-        $user = User::where('slug', $slug)->first();
+        $user = User::find($this->route('user'));
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -38,8 +37,11 @@ class UserRequest extends FormRequest
                 'email',
                 Rule::unique('users', 'email')->ignore($user?->id),
             ],
-            'phone'  => ['nullable',
-                'string', 'phone:PH', 'max:20',
+            'phone' => [
+                'nullable',
+                'string',
+                'phone:PH',
+                'max:20',
                 Rule::unique('users', 'phone')->ignore($user?->id),
             ],
             'role' => [
@@ -69,10 +71,10 @@ class UserRequest extends FormRequest
         return [
             // Custom phone validation message
             'phone.phone' => 'The provided number is not a valid contact format for the Philippines.',
-            'phone.max'   => 'The contact number must not exceed 20 characters.',
+            'phone.max' => 'The contact number must not exceed 20 characters.',
             // Custom image validation message
             'avatar.image' => 'The profile picture must be a valid image file (jpeg, png, bmp, gif, or svg).',
-            'avatar.max'   => 'The image size is too large. Please upload an avatar smaller than 25MB.',
+            'avatar.max' => 'The image size is too large. Please upload an avatar smaller than 25MB.',
         ];
     }
 }

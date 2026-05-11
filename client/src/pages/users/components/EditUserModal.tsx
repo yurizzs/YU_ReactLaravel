@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "../../../components/ui/Modal";
 import { notify } from "../../../util/notify";
 import { InputField, FileUploadField, PasswordInputField, Radio } from "../../../components/ui/forms";
-import type { Role } from "../../../interfaces/user";
+import type { User, Role } from "../../../interfaces/user";
 import UserService from "../../../services/UserService";
 
 type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess: () => void;
+    user: User | null;
 };
 
-interface UserFormData {
+interface EditUserFormData {
+    id: string | number;
     avatar: File | null;
     name: string;
     email: string;
@@ -25,11 +27,12 @@ interface FormErrors {
     [key: string]: string;
 }
 
-const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
+const EditUserModal = ({ isOpen, onClose, onSuccess, user }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
 
-    const initialFormState: UserFormData = {
+    const initialFormState: EditUserFormData = {
+        id: "",
         avatar: null,
         name: "",
         email: "",
@@ -39,7 +42,24 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
         role: "guest",
     };
 
-    const [form, setForm] = useState<UserFormData>(initialFormState);
+    const [form, setForm] = useState<EditUserFormData>(initialFormState);
+
+    // Pre-populate form when a user is selected
+    useEffect(() => {
+        if (user) {
+            setForm({
+                id: user.id ?? "",
+                avatar: null,
+                name: user.name ?? "",
+                email: user.email ?? "",
+                phone: user.phone ?? "",
+                password: "",
+                password_confirmation: "",
+                role: user.role ?? "guest",
+            });
+            setErrors({});
+        }
+    }, [user]);
 
     const handleFileSelect = (files: File[]) => {
         setForm((prev) => ({
@@ -54,7 +74,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             });
         }
     };
-    
+
     const handleChange = (name: string, value: string | Role) => {
         setForm((prev) => ({
             ...prev,
@@ -70,26 +90,34 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
     };
 
     const handleSubmit = async () => {
+        if (!user) return;
+
         setIsLoading(true);
         setErrors({});
 
         try {
-            // Create FormData for multipart/form-data submission
+            // Build FormData for multipart/form-data submission
             const formData = new FormData();
             formData.append("name", form.name);
             formData.append("email", form.email);
             formData.append("phone", form.phone);
-            formData.append("password", form.password);
-            formData.append("password_confirmation", form.password_confirmation);
             formData.append("role", form.role);
-            
+
+            // Only include password fields if the user is changing the password
+            if (form.password) {
+                formData.append("password", form.password);
+                formData.append("password_confirmation", form.password_confirmation);
+            }
+
             if (form.avatar) {
                 formData.append("avatar", form.avatar);
             }
 
-            await UserService.create(formData);
-            notify.success("User created successfully!");
-            setForm({...initialFormState});
+            // Laravel requires _method override for PUT with multipart/form-data
+            formData.append("_method", "PUT");
+
+            await UserService.update(user.id, formData);
+            notify.success("User updated successfully!");
             setErrors({});
             onClose();
             onSuccess();
@@ -97,7 +125,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
         } catch (error: any) {
             // Extract validation errors from Laravel response
             const validationErrors = error.response?.data?.errors;
-            
+
             if (validationErrors && typeof validationErrors === 'object') {
                 // Convert array errors to strings (take first error message for each field)
                 const formattedErrors: FormErrors = {};
@@ -109,7 +137,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
                 notify.error("Some fields are incomplete or contain invalid information. Please review them.");
                 setErrors(formattedErrors);
             } else {
-                notify.error(error?.message || "Failed to create user");
+                notify.error(error?.message || "Failed to update user");
             }
             console.error(error);
         } finally {
@@ -121,22 +149,22 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Create User"
+            title="Edit User"
             size="md"
             primaryAction={{
-                label: "Create",
+                label: "Update",
                 onClick: handleSubmit,
                 variant: "primary",
                 iconName: "FaFloppyDisk",
                 isLoading,
-                loadingText: "Creating User..."
+                loadingText: "Updating User..."
             }}
             secondaryAction={{
                 label: "Cancel",
                 onClick: onClose,
                 variant: "secondary",
             }}
-            >
+        >
             <form className="space-y-4">
 
                 <FileUploadField
@@ -188,9 +216,8 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
                 <PasswordInputField
                     name="password"
-                    label="Password"
-                    placeholder="Enter password"
-                    required
+                    label="New Password"
+                    placeholder="Leave blank to keep current password"
                     fullWidth
                     value={form.password}
                     onChange={(e) => handleChange("password", e.target.value)}
@@ -199,22 +226,33 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
                 <PasswordInputField
                     name="password_confirmation"
-                    label="Confirm Password"
-                    placeholder="Confirm password"
-                    required
+                    label="Confirm New Password"
+                    placeholder="Confirm new password"
                     fullWidth
                     value={form.password_confirmation}
                     onChange={(e) => handleChange("password_confirmation", e.target.value)}
                     error={errors.password_confirmation}
                 />
-                
+
                 <div className="flex flex-col gap-2">
                     <label className="text-sm text-text-muted font-semibold uppercase tracking-wider ml-1 flex items-center gap-1">
-                        Role (Default to Guest)
+                        Role
                     </label>
                     <div className="inline-flex gap-3">
-                        <Radio name="role" label="Guest" value={form.role}/>
-                        <Radio name="role" label="Admin" value={form.role}/>
+                        <Radio
+                            name="role"
+                            label="Guest"
+                            value="guest"
+                            checked={form.role === "guest"}
+                            onChange={() => handleChange("role", "guest")}
+                        />
+                        <Radio
+                            name="role"
+                            label="Admin"
+                            value="admin"
+                            checked={form.role === "admin"}
+                            onChange={() => handleChange("role", "admin")}
+                        />
                     </div>
                 </div>
 
@@ -223,4 +261,4 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
     );
 };
 
-export default CreateUserModal;
+export default EditUserModal;

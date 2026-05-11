@@ -5,6 +5,7 @@ import { PATHS } from "./path";
 // Lazy Loading
 const Dashboard = React.lazy(() => import("../pages/Dashboard"));
 const Users = React.lazy(() => import("../pages/users/Users"));
+const ViewUserDetail = React.lazy(() => import("../pages/users/components/ViewUserDetail"));
 
 export const Routes = createBrowserRouter([
 
@@ -17,12 +18,16 @@ export const Routes = createBrowserRouter([
         element: <Navigate to={PATHS.APP.DASHBOARD} replace />,
       },
       {
-        path: "dashboard",
+        path: PATHS.APP.DASHBOARD,
         element: <Dashboard />,
       },
       {
-        path: "users",
+        path: PATHS.APP.USERS,
         element: <Users />,
+      },
+      {
+        path: PATHS.APP.USER_DETAIL,
+        element: <ViewUserDetail />,
       },
     ],
   },

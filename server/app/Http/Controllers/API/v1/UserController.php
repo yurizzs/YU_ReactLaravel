@@ -7,6 +7,7 @@ use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\ApiResponse;
 
 class UserController extends Controller
@@ -23,7 +24,7 @@ class UserController extends Controller
         // Handle soft deletes - exclude deleted users by default
         $filter = $request->input('filter', 'active'); // active, deleted, all
 
-        match($filter) {
+        match ($filter) {
             'deleted' => $query->onlyTrashed(),
             'all' => $query->withTrashed(),
             'active' => $query->withoutTrashed(),
@@ -35,7 +36,7 @@ class UserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -103,25 +104,58 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $slug)
     {
-        //
-    }
+        $user = User::withTrashed()->where('slug', $slug)->firstOrFail();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        return $this->success(
+            "User retrieved successfully",
+            ['user' => new UserResource($user)],
+            200
+        );
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UserRequest $request, string $id)
     {
-        //
+        $user = User::withTrashed()->firstOrFail($id);
+
+        $validated = $request->validated();
+
+        // Handle avatar upload — replace old file if a new one is provided
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar from storage if it exists
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $avatarFile = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $avatarFile->getClientOriginalExtension();
+            $path = $avatarFile->storeAs('avatars', $filename, 'public');
+            $validated['avatar'] = $path;
+        } else {
+            // Keep the existing avatar
+            unset($validated['avatar']);
+        }
+
+        // Only update password when a new one is explicitly provided
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+            unset($validated['password_confirmation']);
+        }
+
+        // Remove confirmation field — not a DB column
+        unset($validated['password_confirmation']);
+
+        $user->update($validated);
+
+        return $this->success(
+            "User updated successfully",
+            ['user' => new UserResource($user)],
+            200
+        );
     }
 
     /**
@@ -129,7 +163,52 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::withTrashed()->findOrFail($id);
+
+        // If user is already trashed (soft deleted), do a hard delete (permanent)
+        // Otherwise, do a soft delete
+        if ($user->trashed()) {
+            // Permanently delete the user and their avatar
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->forceDelete();
+
+            return $this->success(
+                "User permanently deleted successfully",
+                null,
+                200
+            );
+        } else {
+            // Soft delete the user
+            $user->delete();
+
+            return $this->success(
+                "User deleted successfully",
+                null,
+                200
+            );
+        }
+    }
+
+    /**
+     * Restore a soft-deleted user.
+     */
+    public function restore(string $id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        if (!$user->trashed()) {
+            return $this->error("User is not deleted", 400);
+        }
+
+        $user->restore();
+
+        return $this->success(
+            "User restored successfully",
+            ['user' => new UserResource($user)],
+            200
+        );
     }
 
 }

@@ -20,9 +20,9 @@ const UserService = {
         ),
     
     // for GET user http://localhost:8000/api/{id}  (show)
-    getOne: (id: string | number) => 
+    getOne: (slug: string) => 
         handleRequest(
-            AxiosInstance.get(`${BASE_PREFIX}/${id}`), 
+            AxiosInstance.get(`${BASE_PREFIX}/${slug}`), 
             "Failed to fetch user details"
         ),
     
@@ -36,7 +36,7 @@ const UserService = {
     // for UPDATE user http://localhost:8000/api/{id}  (update)
     update: ( id: string | number, data: FormData, ) => 
         handleRequest(
-            AxiosInstance.put(`${BASE_PREFIX}/${id}`, data), 
+            AxiosInstance.post(`${BASE_PREFIX}/${id}`, data), 
             "Failed to update user"
     ),
     
@@ -45,6 +45,13 @@ const UserService = {
         handleRequest(
             AxiosInstance.delete(`${BASE_PREFIX}/${id}`), 
             "Failed to delete user"
+        ),
+
+    // for RESTORE user http://localhost:8000/api/{id}/restore (restore)
+    restore: (id: string | number) =>
+        handleRequest(
+            AxiosInstance.post(`${BASE_PREFIX}/${id}/restore`),
+            "Failed to restore user"
         ),
 };
 

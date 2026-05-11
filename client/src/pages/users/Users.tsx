@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../../components/layouts';
 import {
   Table,
@@ -11,10 +12,14 @@ import {
 import { Button, ToastProvider, LoadingSpinner, Icon } from '../../components/ui';
 import { InputField } from '../../components/ui/forms';
 import CreateUserModal from './components/CreateUserModal';
+import EditUserModal from './components/EditUserModal';
+import DeleteUserModal from './components/DeleteUserModal';
+import RestoreUserModal from './components/RestoreUserModal';
 import UserService from '../../services/UserService';
 import type { User } from '../../interfaces/user';
 import { notify } from '../../util/notify';
 import { useDebounce, useDateFormatter } from '../../hooks/index';
+import { PATHS } from '../../routes/path';
 
 /* =========================
    TYPES
@@ -32,6 +37,7 @@ type PaginationMeta = {
 };
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationMeta>({
@@ -40,7 +46,7 @@ const Users = () => {
     per_page: 10,
     total: 0,
   });
-  
+
   const [sort, setSort] = useState<SortState>({
     key: "name",
     direction: "asc",
@@ -61,7 +67,7 @@ const Users = () => {
       label: 'All Users',
     },
   } as const;
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const isSearching = searchTerm?.trim() !== "";
   const debouncedSearchTerm = useDebounce(searchTerm);
@@ -147,7 +153,68 @@ const Users = () => {
   const handleCreateUserClose = () => {
     setIsCreateModalOpen(false);
     setPage(1);
-    fetchUsers(1, pageSize);
+  };
+
+  const [isEditUserModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [userToRestore, setUserToRestore] = useState<User | null>(null);
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditUserClose = () => {
+    setIsEditModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleUserSuccess = async () => {
+    await fetchUsers();
+
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+
+    setSelectedUser(null);
+  };
+
+  /* =========================
+     DELETE HANDLER
+  ========================= */
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteSuccess = async () => {
+    await fetchUsers(page, pageSize);
+    setUserToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setUserToDelete(null);
+  };
+
+  /* =========================
+     RESTORE HANDLER
+  ========================= */
+  const handleRestoreUser = (user: User) => {
+    setUserToRestore(user);
+    setIsRestoreModalOpen(true);
+  };
+
+  const handleRestoreSuccess = async () => {
+    await fetchUsers(page, pageSize);
+    setUserToRestore(null);
+  };
+
+  const handleCancelRestore = () => {
+    setIsRestoreModalOpen(false);
+    setUserToRestore(null);
   };
 
   const content = (
@@ -183,11 +250,10 @@ const Users = () => {
               variant='primary'
               onClick={() => setFilter(f)}
               iconName={icon}
-              className={`relative px-4 py-2.5 rounded-lg font-semibold uppercase text-xs transition-all duration-300 flex items-center gap-2 group ${
-                filter === f
-                  ? 'bg-primary text-bg-dark shadow-lg shadow-primary/30'
-                  : 'bg-transparent text-text hover:bg-bg-light/50'
-              }`}
+              className={`relative px-4 py-2.5 rounded-lg font-semibold uppercase text-xs transition-all duration-300 flex items-center gap-2 group ${filter === f
+                ? 'bg-primary text-bg-dark shadow-lg shadow-primary/30'
+                : 'bg-transparent text-text hover:bg-bg-light/50'
+                }`}
             >
               <span>{label}</span>
 
@@ -197,7 +263,7 @@ const Users = () => {
             </Button>
           );
         })}
-      </div>  
+      </div>
 
       <Table>
         <TableHeader>
@@ -228,7 +294,7 @@ const Users = () => {
             >
               Role
             </TableCell>
-            <TableCell 
+            <TableCell
               isHeader
               sortKey="created_at"
               currentSort={sort}
@@ -249,7 +315,7 @@ const Users = () => {
             <TableRow>
               <TableCell colSpan={7} className="text-center py-12">
                 <div className="flex items-center justify-center w-full">
-                  <LoadingSpinner size="md" text={isSearching ? "Searching for users..." : "Loading Users...."}/>
+                  <LoadingSpinner size="md" text={isSearching ? "Searching for users..." : "Loading Users...."} />
                 </div>
               </TableCell>
             </TableRow>
@@ -257,7 +323,7 @@ const Users = () => {
             <TableRow>
               <TableCell colSpan={7} className="py-12">
                 <div className="flex flex-col items-center justify-center text-center space-y-4 w-full">
-                  
+
                   {/* Icon */}
                   <div className="w-16 h-16 flex items-center justify-center rounded-full">
                     <Icon iconName="FaUsersSlash" className="text-3xl" />
@@ -308,6 +374,7 @@ const Users = () => {
                       tooltip='View user details'
                       tooltipPosition='top'
                       className='text-primary hover:text-primary hover:bg-primary/10'
+                      onClick={() => navigate(PATHS.APP.USER_DETAIL.replace(':slug', user.slug))}
                     />
                     <Button
                       size='sm'
@@ -316,13 +383,25 @@ const Users = () => {
                       tooltip='Edit user'
                       tooltipPosition='top'
                       className='text-info hover:text-info hover:bg-info/10'
+                      onClick={() => handleEditUser(user)}
                     />
+                    {filter === 'deleted' && (
+                      <Button
+                        size='sm'
+                        variant='primary'
+                        iconName='FaArrowRotateLeft'
+                        tooltip='Restore user'
+                        tooltipPosition='top'
+                        onClick={() => handleRestoreUser(user)}
+                      />
+                    )}
                     <Button
                       size='sm'
                       variant='danger'
                       iconName='FaTrash'
                       tooltip='Delete user'
                       tooltipPosition='top'
+                      onClick={() => handleDeleteUser(user)}
                     />
                   </div>
                 </TableCell>
@@ -345,11 +424,35 @@ const Users = () => {
           }}
         />
       )}
-      
+
       <CreateUserModal
         isOpen={isCreateUserModalOpen}
         onClose={handleCreateUserClose}
+        onSuccess={handleUserSuccess}
       />
+      
+      <EditUserModal
+        isOpen={isEditUserModalOpen}
+        onClose={handleEditUserClose}
+        user={selectedUser}
+        onSuccess={handleUserSuccess}
+      />
+
+      <DeleteUserModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        user={userToDelete}
+        isPermanentDelete={filter === 'deleted'}
+        onSuccess={handleDeleteSuccess}
+      />
+
+      <RestoreUserModal
+        isOpen={isRestoreModalOpen}
+        onClose={handleCancelRestore}
+        user={userToRestore}
+        onSuccess={handleRestoreSuccess}
+      />
+
       <ToastProvider />
     </div>
   );
