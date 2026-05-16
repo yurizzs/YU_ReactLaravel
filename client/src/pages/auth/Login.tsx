@@ -5,7 +5,7 @@ import { InputField, PasswordInputField } from "../../components/ui/forms/index"
 import { useAuth } from "../../contexts/AuthContext";
 import { notify } from "../../util/notify";
 import { PATHS } from "../../routes/path";
-import BrandLogo from "../../assets/vite.svg";
+import BrandLogo from "../../assets/react.svg";
 import type { AxiosError } from "axios";
 
 const Login: React.FC = () => {
@@ -97,7 +97,7 @@ const Login: React.FC = () => {
                         {/* Brand name */}
                         <div className="space-y-3">
                             <h1 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter text-text">
-                                FEGURO
+                                YU
                             </h1>
                             <p className="text-sm lg:text-base font-semibold uppercase tracking-[0.3em] text-text-muted">
                                 React × Laravel
@@ -232,7 +232,7 @@ const Login: React.FC = () => {
 
                         {/* Footer */}
                         <p className="text-center text-xs text-text-muted/60 mt-6 font-medium tracking-wide">
-                            © {new Date().getFullYear()} FEGURO. All rights reserved.
+                            © {new Date().getFullYear()} YU. All rights reserved.
                         </p>
                     </div>
                 </div>

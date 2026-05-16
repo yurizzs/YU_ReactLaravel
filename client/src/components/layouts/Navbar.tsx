@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { PATHS } from "../../routes/path";
 import { Icon } from "../ui";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { useOnClickOutside } from "../../hooks/useOnClickOutside";
 import { notify } from "../../util/notify";
 import Logo from "../../assets/react.svg";
@@ -13,6 +14,14 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  const themeConfig = {
+    light:  { icon: "FaSun"    as const, label: "Light Mode" },
+    dark:   { icon: "FaMoon"   as const, label: "Dark Mode" },
+    system: { icon: "FaDesktop" as const, label: "System" },
+  };
+  
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -47,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </span>
             <Link to={PATHS.APP.DASHBOARD} className="flex gap-3 items-center">
               <img src={Logo} alt="App Logo" />
-              <span className="text-text font-black text-lg tracking-tighter uppercase italic hidden sm:block">FEGURO ReactLaravel</span>
+              <span className="text-text font-black text-lg tracking-tighter uppercase italic hidden sm:block">YU ReactLaravel</span>
             </Link>
           </div>
 
@@ -128,6 +137,46 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
                   {/* Menu Items */}
                   <div className="py-1.5">
+
+                    {/* Theme Toggle */}
+                    <button
+                      id="theme-toggle-btn"
+                      onClick={toggleTheme}
+                      className="w-full flex items-center justify-between px-4 py-2.5
+                        hover:bg-primary/10 transition-colors duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon
+                          iconName={themeConfig[theme].icon}
+                          size={14}
+                          className="text-text-muted group-hover:text-primary transition-colors duration-200"
+                        />
+                        <span className="text-sm font-semibold text-text group-hover:text-primary transition-colors duration-200">
+                          {themeConfig[theme].label}
+                        </span>
+                      </div>
+
+                      {/* Segmented selector */}
+                      <div className="flex items-center bg-bg-main rounded-lg p-0.5 gap-0.5">
+                        {(["light", "dark", "system"] as const).map((mode) => (
+                          <div
+                            key={mode}
+                            className={`p-1 rounded-md transition-all duration-200 ${
+                              theme === mode
+                                ? "bg-primary text-bg-dark shadow-sm"
+                                : "text-text-muted"
+                            }`}
+                          >
+                            <Icon iconName={themeConfig[mode].icon} size={10} />
+                          </div>
+                        ))}
+                      </div>
+                    </button>
+
+                    {/* Divider */}
+                    <div className="mx-3 my-1 border-t border-border-muted" />
+
+                    {/* Sign Out */}
                     <button
                       id="logout-btn"
                       onClick={handleLogout}

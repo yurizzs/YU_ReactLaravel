@@ -20,20 +20,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ 
-    children, 
+  ({
+    children,
     variant = 'primary',
-    size = 'md', 
-    isLoading = false, 
+    size = 'md',
+    isLoading = false,
     loadingText = '',
-    iconName, 
+    iconName,
     iconPosition = 'left',
     fullWidth = false,
     tooltip,
     tooltipPosition = 'top',
-    className = '', 
+    className = '',
     disabled,
-    ...props 
+    ...props
   }, ref) => {
 
     const baseStyles = `group relative inline-flex items-center justify-center font-bold border border-border-muted shadow uppercase cursor-pointer
@@ -41,8 +41,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     disabled:cursor-not-allowed rounded-2xl gap-2 overflow-visible`;
 
     const variants = {
-      primary: "bg-primary text-bg-dark hover:bg-primary/80", 
-      secondary: "bg-secondary text-bg-dark hover:bg-secondary/80", 
+      primary: "bg-primary text-bg-dark hover:bg-primary/80",
+      secondary: "bg-secondary text-bg-dark hover:bg-secondary/80",
       danger: "bg-danger text-bg-dark hover:bg-danger/80",
       outline: "border-2 border-primary text-primary hover:bg-primary hover:text-bg-dark dark:hover:text-text",
       ghost: "bg-transparent hover:bg-secondary/20 text-text border-2 border-secondary",
@@ -89,9 +89,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {/* Loading Overlay */}
         {isLoading && (
           <div className="inset-0 flex items-center justify-center bg-inherit z-10 rounded-2xl">
-            <LoadingSpinner 
+            <LoadingSpinner
               size="custom"
-              customSize={spinnerSizeMap[size]} 
+              customSize={spinnerSizeMap[size]}
               color="text-current"
               text={loadingText}
             />
@@ -100,21 +100,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         {/* Content */}
         <div className={`${isLoading ? 'hidden' : 'flex'} items-center gap-2 transition-opacity duration-200`}>
-          
+
           {iconPosition === 'left' && iconName && !isLoading && (
-            <Icon 
-              iconName={iconName} 
-              size={size === 'sm' ? 14 : 18} 
+            <Icon
+              iconName={iconName}
+              size={size === 'sm' ? 14 : 18}
               className="text-current"
             />
           )}
-          
+
           {children && <span>{children}</span>}
-          
+
           {iconPosition === 'right' && iconName && !isLoading && (
-            <Icon 
-              iconName={iconName} 
-              size={size === 'sm' ? 14 : 18} 
+            <Icon
+              iconName={iconName}
+              size={size === 'sm' ? 14 : 18}
               className="text-current"
             />
           )}

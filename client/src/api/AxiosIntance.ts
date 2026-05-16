@@ -41,9 +41,9 @@ AxiosInstance.interceptors.response.use(
     const url = error.config?.url || "";
 
     const isAuthCheck = url.includes("/user/auth/me");
+    const isLoginAttempt = url.includes("auth/login");
 
-    // ONLY system-level handling here
-    if (status === 401 && !isAuthCheck) {
+    if (status === 401 && !isAuthCheck && !isLoginAttempt) {
       notify.error("Session expired. Please log in again.");
     }
 

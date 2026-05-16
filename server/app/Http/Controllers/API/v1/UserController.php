@@ -120,7 +120,7 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, string $id)
     {
-        $user = User::withTrashed()->firstOrFail($id);
+        $user = User::withTrashed()->findOrFail($id);
 
         $validated = $request->validated();
 

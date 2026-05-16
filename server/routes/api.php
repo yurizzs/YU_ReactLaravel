@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthenticationController::class, 'login']);
 
-
 Route::middleware('auth:sanctum')->group(function () {
 
     // Auth
